@@ -31,6 +31,9 @@ pub fn build(b: *Builder) !void {
         });
         exe.addModule("ztrait", ztrait);
         exe.addModule("genserver", genserver);
+        if (target.isWindows()) {
+            exe.linkLibC();
+        }
         const run_step = b.step(example.name, &.{});
         run_step.dependOn(&b.addRunArtifact(exe).step);
         b.installArtifact(exe);

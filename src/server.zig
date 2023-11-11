@@ -1,10 +1,27 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-const poll = if (builtin.os.tag == .windows) std.os.windows.poll
+pub fn wpoll(fds: []std.os.pollfd, timeout: i32) std.os.PollError!usize {
+    while (true) {
+        const fds_count = std.math.cast(std.os.nfds_t, fds.len) orelse return error.SystemResources;
+        const rc = std.os.windows.poll(fds.ptr, fds_count, timeout);
+        if (rc == std.os.windows.ws2_32.SOCKET_ERROR) {
+            switch (std.os.windows.ws2_32.WSAGetLastError()) {
+                .WSANOTINITIALISED => unreachable,
+                .WSAENETDOWN => return error.NetworkSubsystemFailed,
+                .WSAENOBUFS => return error.SystemResources,
+                else => |err| return std.os.windows.unexpectedWSAError(err),
+            }
+        } else {
+            return @as(usize, @intCast(rc));
+        }
+    }
+}
+
+const poll = if (builtin.os.tag == .windows) wpoll
     else std.os.poll;
 const POLLIN = if (builtin.os.tag == .windows)
-    (std.os.windows.POLL.RDNORM | std.os.windows.POLL.RDBAND)
+    (std.os.windows.ws2_32.POLL.RDNORM | std.os.windows.ws2_32.POLL.RDBAND)
 else
     std.os.POLL.IN;
 const INV_SOCKET = if (builtin.os.tag == .windows)
@@ -86,7 +103,7 @@ pub const Server = struct {
                 next_handle += 1;
             }
             var dest: std.os.sockaddr = undefined;
-            var socksize: std.os.socklen_t = 0;
+            var socksize: std.os.socklen_t = @sizeOf(@TypeOf(dest));
             const socket = std.os.accept(
                 self.pollfds[self.pollfds.len - 1].fd,
                 &dest,
@@ -126,7 +143,7 @@ pub const Server = struct {
         const ls = try std.os.socket(std.os.AF.INET, std.os.SOCK.STREAM, 0);
         errdefer std.os.closeSocket(ls);
 
-        try std.os.bind(ls, @ptrCast(&addr), @sizeOf(std.os.sockaddr));
+        try std.os.bind(ls, @ptrCast(&addr), @sizeOf(std.os.sockaddr.in));
         try std.os.listen(ls, @truncate(32));
         self.pollfds[self.pollfds.len - 1] = .{
             .fd = ls,
