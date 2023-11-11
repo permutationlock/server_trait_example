@@ -1,0 +1,11 @@
+.{
+    .name = "server_trait_example",
+    .version = "0.0.0",
+    .paths = .{""},
+    .dependencies = .{
+        .ztrait = .{ 
+            .url = "https://github.com/permutationlock/ztrait/archive/efe8e9d.tar.gz",
+            .hash = "12200fc6a05a573d2568c033bc1f74cf2b3020e24b2a2e104da6bbab90cb2ee6b49a",
+        }
+    }
+}
