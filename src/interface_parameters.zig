@@ -1,5 +1,7 @@
 const std = @import("std");
 const zt = @import("ztrait");
+const Interface = zt.Interface;
+const PointerChild = zt.PointerChild;
 const BaseServer = @import("server.zig").Server;
 
 pub const Server = struct {
@@ -17,7 +19,7 @@ pub const Server = struct {
     pub fn poll(
         self: *Self,
         handler: anytype,
-        handler_ifc: zt.Interface(@TypeOf(handler), Handler)
+        handler_ifc: Interface(PointerChild(@TypeOf(handler)), Handler)
     ) !void {
         try self.server.pollSockets();
         while (self.server.getEvent()) |evt| {

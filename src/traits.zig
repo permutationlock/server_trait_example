@@ -1,5 +1,8 @@
 const std = @import("std");
 const zt = @import("ztrait");
+const where = zt.where;
+const implements = zt.implements;
+const PointerChild = zt.PointerChild;
 const BaseServer = @import("server.zig").Server;
 
 pub const Server = struct {
@@ -15,7 +18,7 @@ pub const Server = struct {
     }
 
     pub fn poll(self: *Self, handler: anytype) !void {
-        comptime zt.where(@TypeOf(handler), zt.implements(Handler));
+        comptime where(PointerChild(@TypeOf(handler)), implements(Handler));
         try self.server.pollSockets();
         while (self.server.getEvent()) |evt| {
             switch (evt) {
