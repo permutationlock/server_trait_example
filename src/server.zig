@@ -34,7 +34,7 @@ const inv_pollfd: std.os.pollfd = .{
     .revents = 0,
 };
 
-const max_conns = 4;
+const max_conns = 64;
 
 pub const Server = struct {
     pollfds: [max_conns + 1]std.os.pollfd =

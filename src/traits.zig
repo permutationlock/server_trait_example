@@ -1,8 +1,10 @@
 const std = @import("std");
+
 const zt = @import("ztrait");
 const where = zt.where;
 const implements = zt.implements;
 const PointerChild = zt.PointerChild;
+
 const BaseServer = @import("server.zig").Server;
 
 pub const Server = struct {

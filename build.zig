@@ -8,6 +8,7 @@ const paths = [_]Example{
     .{ .name = "traits", .path = "examples/traits.zig" },
     .{ .name = "interfaces", .path = "examples/interfaces.zig" },
     .{ .name = "interface_parameters", .path = "examples/interface_parameters.zig" },
+    .{ .name = "zimpl_interfaces", .path = "examples/zimpl_interfaces.zig" },
 };
 
 pub fn build(b: *Builder) !void {
@@ -15,10 +16,12 @@ pub fn build(b: *Builder) !void {
     const optimize = b.standardOptimizeOption(.{});
 
     const ztrait = b.dependency("ztrait", .{}).module("ztrait");
+    const zimpl = b.dependency("zimpl", .{}).module("zimpl");
     const genserver = b.addModule("genserver", .{
         .source_file = .{ .path = "src/genserver.zig" },
         .dependencies = &.{
             .{ .name = "ztrait", .module = ztrait },
+            .{ .name = "zimpl", .module = zimpl },
         },
     });
 
@@ -29,7 +32,6 @@ pub fn build(b: *Builder) !void {
             .target = target,
             .optimize = optimize
         });
-        exe.addModule("ztrait", ztrait);
         exe.addModule("genserver", genserver);
         if (target.isWindows()) {
             exe.linkLibC();
