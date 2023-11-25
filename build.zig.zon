@@ -4,12 +4,12 @@
     .paths = .{""},
     .dependencies = .{
         .ztrait = .{ 
-            .url = "https://github.com/permutationlock/ztrait/archive/f66c4de.tar.gz",
-            .hash = "12200c3228291e3c1fac087f2b72f5b1875afc77fa4a4c0e0f20434ddcb94f9f89cd",
+            .url = "https://github.com/permutationlock/ztrait/archive/7216807.tar.gz",
+            .hash = "1220412fc82056fabb4dbbc22c542a09059cc58ae1411ced9d16641fd58a17c93c2b",
         },
         .zimpl = .{
-            .url = "https://github.com/permutationlock/zimpl/archive/c2a36bc.tar.gz",
-            .hash = "12204477f016b257934254f488cc4f87b9d2ede756ea54003768582398060234dc51",
+            .url = "https://github.com/permutationlock/zimpl/archive/8a30d48.tar.gz",
+            .hash = "12208fd0c351a8b73b3111707053677297304b55878cfb41f36c0c382df7da7afedc",
         },
     }
 }

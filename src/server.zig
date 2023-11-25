@@ -18,8 +18,7 @@ pub fn wpoll(fds: []std.os.pollfd, timeout: i32) std.os.PollError!usize {
     }
 }
 
-const poll = if (builtin.os.tag == .windows) wpoll
-    else std.os.poll;
+const poll = if (builtin.os.tag == .windows) wpoll else std.os.poll;
 const POLLIN = if (builtin.os.tag == .windows)
     (std.os.windows.ws2_32.POLL.RDNORM | std.os.windows.ws2_32.POLL.RDBAND)
 else
@@ -38,13 +37,13 @@ const max_conns = 64;
 
 pub const Server = struct {
     pollfds: [max_conns + 1]std.os.pollfd =
-        [1]std.os.pollfd{ inv_pollfd } ** (max_conns + 1),
+        [1]std.os.pollfd{inv_pollfd} ** (max_conns + 1),
     index: u32 = 0,
     events: usize = 0,
     buffer: [256]u8 = undefined,
 
     const Self = @This();
-    
+
     const Connection = struct {
         open: bool,
         socket: std.os.socket_t,
@@ -92,11 +91,11 @@ pub const Server = struct {
 
         if (index >= self.pollfds.len) {
             return null;
-        }        
+        }
 
         if (index == self.pollfds.len - 1) {
             var next_handle: Handle = 0;
-            for (self.pollfds[0..(self.pollfds.len-1)]) |*pfd| {
+            for (self.pollfds[0..(self.pollfds.len - 1)]) |*pfd| {
                 if (pfd.fd == INV_SOCKET) {
                     break;
                 }
@@ -104,12 +103,7 @@ pub const Server = struct {
             }
             var dest: std.os.sockaddr = undefined;
             var socksize: std.os.socklen_t = @sizeOf(@TypeOf(dest));
-            const socket = std.os.accept(
-                self.pollfds[self.pollfds.len - 1].fd,
-                &dest,
-                &socksize,
-                0
-            ) catch return null;
+            const socket = std.os.accept(self.pollfds[self.pollfds.len - 1].fd, &dest, &socksize, 0) catch return null;
 
             if (next_handle == self.pollfds.len - 1) {
                 std.os.closeSocket(socket);
@@ -124,8 +118,7 @@ pub const Server = struct {
             return .{ .open = next_handle };
         }
 
-        const len = std.os.recv(self.pollfds[index].fd, &self.buffer, 0)
-            catch 0;
+        const len = std.os.recv(self.pollfds[index].fd, &self.buffer, 0) catch 0;
 
         if (len == 0) {
             self.close(index);
@@ -133,15 +126,25 @@ pub const Server = struct {
         }
 
         return .{
-            .msg = .{ .handle = index, .bytes = self.buffer[0..len], },
+            .msg = .{
+                .handle = index,
+                .bytes = self.buffer[0..len],
+            },
         };
     }
 
     pub fn listen(self: *Self, port: u16) !void {
-        var addr = (std.net.Ip4Address.parse("0.0.0.0", port)
-            catch unreachable).sa;
+        var addr = (std.net.Ip4Address.parse("0.0.0.0", port) catch unreachable).sa;
         const ls = try std.os.socket(std.os.AF.INET, std.os.SOCK.STREAM, 0);
         errdefer std.os.closeSocket(ls);
+
+        const one: i32 = 1;
+        try std.os.setsockopt(
+            ls,
+            std.os.SOL.SOCKET,
+            std.os.SO.REUSEADDR,
+            std.mem.asBytes(&one),
+        );
 
         try std.os.bind(ls, @ptrCast(&addr), @sizeOf(std.os.sockaddr.in));
         try std.os.listen(ls, @truncate(32));
